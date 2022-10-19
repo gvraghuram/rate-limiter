@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using RateLimiter.LocationService;
 using RateLimiter.Model;
 using RateLimiter.RulesEngine.Interfaces;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -19,14 +19,14 @@ namespace RateLimiter.Middlewares
             this.next = next;
         }
 
-        public async Task Invoke(HttpContext context, IRuleEngine engine, ILocationService locationService)
+        public async Task Invoke(HttpContext context, IRuleEngine engine)
         {
             var request = context.Request.Host.Host;
             var ip = context.Connection.RemoteIpAddress;
-            var region = locationService.GetRegionFromIp(ip);
+            var Location = ClientLocations.US;
             var claimsIdentity = context.User.Identity as ClaimsIdentity;
 
-            var ClientRequest = new ClientRequest(new ClientToken(ip), region);
+            var ClientRequest = new ClientRequest(new ClientToken(ip), Location, DateTime.UtcNow);
             if (engine.ProcessRules(ClientRequest))
             {
                 await next(context);

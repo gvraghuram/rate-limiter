@@ -16,158 +16,82 @@ namespace RateLimiter.Tests
     [TestFixture]
     public class RateLimiterTest
     {
-        private IRuleEngine engine;
+        private IPAddress fakeIp = IPAddress.Parse("192.168.1.1");
+        private IRuleEngine rulesEngine;
 
         [SetUp]
         public void Setup()
         {
-            var services = new ServiceCollection();
-            services.AddRateLimitServices();
-            services.AddSingleton<IStorageService, InMemoryService>();
-            services.AddSingleton(typeof(IConfiguration), Configuration.GetConfiguration);
-            var serviceProvider = services.BuildServiceProvider();
+            var requiredServices = new ServiceCollection();
+
+            requiredServices.AddRateLimitServices();
+            requiredServices.AddSingleton<IStorage, InMemoryCache>();
+            requiredServices.AddSingleton(typeof(IConfiguration), new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string>
+                {
+                    { "requestLimit", "10" },
+                    { "requestTimeSpan", "1000" },
+                    { "betweenRequestsTimeSpan", "10" }
+                }).Build());
+            var serviceProvider = requiredServices.BuildServiceProvider();
             var scope = serviceProvider.CreateScope();
-            engine = scope.ServiceProvider.GetRequiredService<IRuleEngine>();
+            rulesEngine = scope.ServiceProvider.GetRequiredService<IRuleEngine>();
         }
 
-        [TestCase(ClientRegions.EU)]
-        public void TestEURuleInWindow_Successful(ClientRegions region)
+        [TestCase]
+        public void Should_Return_False_Exceed_Max_Requests_US()
         {
+            var clientToken = new ClientToken(fakeIp);
+            var clientRequest = new ClientRequest(clientToken, ClientLocations.US, DateTime.UtcNow);
 
-            //Arrange 
-            var ip = IPAddress.Parse("127.0.0.1");
-            var token = new ClientToken(ip);
-            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
-            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
-
-            //Act
-            var validate1 = engine.ProcessRules(request1);
-            var validate2 = engine.ProcessRules(request2);
-
-            //Assert
-            Assert.IsTrue(validate1);
-            Assert.IsTrue(validate2);
-        }
-
-        [TestCase(ClientRegions.EU)]
-        public void TestEURuleOutOfWindow_Successful(ClientRegions region)
-        {
-
-            //Arrange 
-            var ip = IPAddress.Parse("127.0.0.1");
-            var token = new ClientToken(ip);
-            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
-            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
-
-            //Act
-            var validate1 = engine.ProcessRules(request1);
-            var validate2 = engine.ProcessRules(request2);
-
-            //Assert
-            Assert.IsTrue(validate1);
-            Assert.IsFalse(validate2);
-        }
-
-        [TestCase(ClientRegions.US)]
-        [TestCase(ClientRegions.EU)]
-        [TestCase(ClientRegions.Others)]
-        public void TestUSOtherRuleInWindow_Successful(ClientRegions region)
-        {
-
-            //Arrange 
-            var ip = IPAddress.Parse("127.0.0.1");
-            var token = new ClientToken(ip);
-            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
-            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
-
-            //Act
-            var validate1 = engine.ProcessRules(request1);
-            var validate2 = engine.ProcessRules(request2);
-
-            //Assert
-            Assert.IsTrue(validate1);
-            Assert.IsTrue(validate2);
-        }
-
-        [TestCase(ClientRegions.US)]
-        [TestCase(ClientRegions.Others)]
-        public void TestUSOtherRuleOutOfWindow_Successful(ClientRegions region)
-        {
-            //Arrange 
-            var ip = IPAddress.Parse("127.0.0.1");
-            var token = new ClientToken(ip);
-            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
-            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
-
-            //Act
-            var validate1 = engine.ProcessRules(request1);
-            var validate2 = engine.ProcessRules(request2);
-
-            //Assert
-            Assert.IsTrue(validate1);
-            Assert.IsTrue(validate2);
-        }
-
-        [TestCase(ClientRegions.US)]
-        [TestCase(ClientRegions.Others)]
-
-        public void TestUSMaxRequestInWindows_Successfully(ClientRegions region)
-        {
-            //Arrage
-            var ip = IPAddress.Parse("127.0.0.1");
-            var token = new ClientToken(ip);
-            var request = new ClientRequest(token, region, DateTime.UtcNow);
-            var results = new List<bool>();
-
-            //Act
+            //Run this for max requests of 10
             for (int i = 0; i < 10; i++)
             {
-                results.Add(engine.ProcessRules(request));
+                rulesEngine.ProcessRules(clientRequest);
             }
 
+            var isRulePassed = rulesEngine.ProcessRules(clientRequest);
 
-            //Assert
-            Assert.IsTrue(results.All(x => x));
+            Assert.IsFalse(isRulePassed);
         }
 
-        [TestCase(ClientRegions.US)]
-        public void TestUSMaxRequestInWindows_ExceedingMax_Successfully(ClientRegions region)
+        [TestCase]
+        public void Should_Return_True_WithIn_Request_Limit_US()
         {
-            //Arrage
-            var ip = IPAddress.Parse("127.0.0.1");
-            var token = new ClientToken(ip);
-            var request = new ClientRequest(token, region, DateTime.UtcNow);
+            var clientToken = new ClientToken(fakeIp);
+            var clientRequest = new ClientRequest(clientToken, ClientLocations.US, DateTime.UtcNow);
 
-            //Act
-            for (int i = 0; i < 10; i++)
+            var allRulesPassed = true;
+            //Run this for max requests of 10
+            for (int i = 0; i < 5; i++)
             {
-                engine.ProcessRules(request);
+                if (!rulesEngine.ProcessRules(clientRequest))
+                    allRulesPassed = false;
             }
 
-            var result = engine.ProcessRules(request);
-
-            //Assert
-            Assert.IsFalse(result);
+            Assert.IsTrue(allRulesPassed);
         }
 
-        [TestCase(ClientRegions.Others)]
-        public void OtherRegionsPassAllRules_Successfully(ClientRegions region)
+        [TestCase]
+        public void Should_Return_False_Exceed_Timespan__EU()
         {
-            //Arrange
-            var ip = IPAddress.Parse("127.0.0.1");
-            var token = new ClientToken(ip);
-            var request = new ClientRequest(token, region, DateTime.UtcNow);
-            bool result = true;
+            var token = new ClientToken(fakeIp);
+            var clientRequest_Current = new ClientRequest(token, ClientLocations.EU, DateTime.UtcNow);
+            var clientRequest_OutOfWindow = new ClientRequest(token, ClientLocations.EU, DateTime.UtcNow.AddMilliseconds(2));
 
-            //Act
-            for (int i = 0; i < 100; i++)
-            {
-                request = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(i));
-                result = result && engine.ProcessRules(request);
-            }
+            Assert.IsTrue(rulesEngine.ProcessRules(clientRequest_Current));
+            Assert.IsFalse(rulesEngine.ProcessRules(clientRequest_OutOfWindow));
+        }
 
-            //Assert
-            Assert.IsTrue(result);
+        [TestCase]
+        public void Should_Return_True_Within_Timespan__EU()
+        {
+            var token = new ClientToken(fakeIp);
+            var clientRequest_Current = new ClientRequest(token, ClientLocations.EU, DateTime.UtcNow);
+            var clientRequest_InWindow = new ClientRequest(token, ClientLocations.EU, DateTime.UtcNow.AddMilliseconds(100));
+
+            Assert.IsTrue(rulesEngine.ProcessRules(clientRequest_Current));
+            Assert.IsTrue(rulesEngine.ProcessRules(clientRequest_InWindow));
         }
     }
 }

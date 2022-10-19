@@ -4,10 +4,9 @@ using System.Text;
 
 namespace RateLimiter.Model
 {
-    public enum ClientRegions
+    public enum ClientLocations
     {
         US,
-        EU,
-        Others
+        EU
     }
 }

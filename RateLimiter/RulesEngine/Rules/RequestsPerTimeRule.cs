@@ -12,23 +12,20 @@ namespace RateLimiter.RulesEngine.Rules
 {
     public class RequestsPerTimeRule : IRateLimiterRule
     {
-        private readonly int maxRequests;
-        private readonly int timeSpan;
-        private readonly IStorageService storageService;
-        private const string MaxRequests = "maxRequestInTs";
-        private const string TimeSpanRequest = "timeRequestSpanInMs";
+        private int requestLimit;
+        private int requestTimeSpan;
+        private IStorage storageService;
 
-
-        public RequestsPerTimeRule(IStorageService storageService, IConfiguration configuration)
+        public RequestsPerTimeRule(IStorage storageService, IConfiguration configuration)
         {
             this.storageService = storageService;
-            maxRequests = int.Parse(configuration[MaxRequests]);
-            timeSpan = int.Parse(configuration[TimeSpanRequest]);
+            requestLimit = int.Parse(configuration["requestLimit"]);
+            requestTimeSpan = int.Parse(configuration["requestTimeSpan"]);
         }
 
         public bool IsEnabled(ClientRequest request)
         {
-            return ClientRegions.US.Equals(request.Region);
+            return ClientLocations.US.Equals(request.ClientLocation);
         }
 
         public bool Validate(ClientRequest request)
@@ -37,11 +34,11 @@ namespace RateLimiter.RulesEngine.Rules
 
             if (lastRequest == null)
             {
-                storageService.SetToken(request.ClientToken.Ip.ToString(), new ClientRequestCache { LastRequest = request.RequestTime, RequestCount = 1 });
+                storageService.SetToken(request.ClientToken.Ip.ToString(), new ClientRequestStorage { LastRequest = request.RequestTime, RequestCount = 1 });
                 return true;
             }
 
-            var result = lastRequest.LastRequest.AddMilliseconds(timeSpan) < request.RequestTime;
+            var result = lastRequest.LastRequest.AddMilliseconds(requestTimeSpan) < request.RequestTime;
             if (result)
             {
                 lastRequest.LastRequest = request.RequestTime;
@@ -49,7 +46,7 @@ namespace RateLimiter.RulesEngine.Rules
                 storageService.SetToken(request.ClientToken.Ip.ToString(), lastRequest);
                 return true;
             }
-            if (++lastRequest.RequestCount <= maxRequests)
+            if (++lastRequest.RequestCount <= requestLimit)
             {
                 storageService.SetToken(request.ClientToken.Ip.ToString(), lastRequest);
                 return true;

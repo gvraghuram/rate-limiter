@@ -12,19 +12,18 @@ namespace RateLimiter.RulesEngine.Rules
 {
     public class TimeRule : IRateLimiterRule
     {
-        private readonly IStorageService storageService;
+        private readonly IStorage storageService;
         private readonly int timeBetweenRequestsInMs;
-        private const string TimeBetweenRequestsInMsVar = "timeBetweenRequestsInMs";
 
-        public TimeRule(IStorageService storageService, IConfiguration configuration)
+        public TimeRule(IStorage storageService, IConfiguration configuration)
         {
             this.storageService = storageService;
-            timeBetweenRequestsInMs = int.Parse(configuration[TimeBetweenRequestsInMsVar]);
+            timeBetweenRequestsInMs = int.Parse(configuration["betweenRequestsTimeSpan"]);
         }
 
         public bool IsEnabled(ClientRequest request)
         {
-            return ClientRegions.EU.Equals(request.Region);
+            return ClientLocations.EU.Equals(request.ClientLocation);
         }
 
         public bool Validate(ClientRequest request)
@@ -33,7 +32,7 @@ namespace RateLimiter.RulesEngine.Rules
 
             if (lastRequest == null)
             {
-                storageService.SetToken(request.ClientToken.Ip.ToString(), new ClientRequestCache { LastRequest = request.RequestTime });
+                storageService.SetToken(request.ClientToken.Ip.ToString(), new ClientRequestStorage { LastRequest = request.RequestTime });
                 return true;
             }
 

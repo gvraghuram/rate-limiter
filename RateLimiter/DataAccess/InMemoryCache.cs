@@ -5,11 +5,11 @@ using System.Text;
 
 namespace RateLimiter.DataAccess
 {
-    public class InMemoryService : IStorageService
+    public class InMemoryCache: IStorage
     {
-        private Dictionary<string, ClientRequestCache> _cache = new();
+        private Dictionary<string, ClientRequestStorage> _cache = new();
 
-        public ClientRequestCache GetToken(string key)
+        public ClientRequestStorage GetToken(string key)
         {
             if (_cache.ContainsKey(key))
             {
@@ -19,7 +19,7 @@ namespace RateLimiter.DataAccess
             return null;
         }
 
-        public void SetToken(string key, ClientRequestCache token)
+        public void SetToken(string key, ClientRequestStorage token)
         {
             _cache[key] = token;
         }
