@@ -8,9 +8,9 @@ namespace RateLimiter.LocationService
 {
     public class LocationService : ILocationService
     {
-        public Regions GetRegionFromIp(IPAddress iPAddress)
+        public ClientRegions GetRegionFromIp(IPAddress iPAddress)
         {
-            return Regions.US;
+            return ClientRegions.US;
         }
     }
 }

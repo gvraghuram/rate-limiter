@@ -30,13 +30,13 @@ namespace RateLimiter.Tests
             engine = scope.ServiceProvider.GetRequiredService<IRuleEngine>();
         }
 
-        [TestCase(Regions.EU)]
-        public void TestEURuleInWindow_Successful(Regions region)
+        [TestCase(ClientRegions.EU)]
+        public void TestEURuleInWindow_Successful(ClientRegions region)
         {
 
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
-            var token = new Token(ip);
+            var token = new ClientToken(ip);
             var request1 = new ClientRequest(token, region, DateTime.UtcNow);
             var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
 
@@ -49,13 +49,13 @@ namespace RateLimiter.Tests
             Assert.IsTrue(validate2);
         }
 
-        [TestCase(Regions.EU)]
-        public void TestEURuleOutOfWindow_Successful(Regions region)
+        [TestCase(ClientRegions.EU)]
+        public void TestEURuleOutOfWindow_Successful(ClientRegions region)
         {
 
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
-            var token = new Token(ip);
+            var token = new ClientToken(ip);
             var request1 = new ClientRequest(token, region, DateTime.UtcNow);
             var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
 
@@ -68,15 +68,15 @@ namespace RateLimiter.Tests
             Assert.IsFalse(validate2);
         }
 
-        [TestCase(Regions.US)]
-        [TestCase(Regions.EU)]
-        [TestCase(Regions.Others)]
-        public void TestUSOtherRuleInWindow_Successful(Regions region)
+        [TestCase(ClientRegions.US)]
+        [TestCase(ClientRegions.EU)]
+        [TestCase(ClientRegions.Others)]
+        public void TestUSOtherRuleInWindow_Successful(ClientRegions region)
         {
 
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
-            var token = new Token(ip);
+            var token = new ClientToken(ip);
             var request1 = new ClientRequest(token, region, DateTime.UtcNow);
             var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
 
@@ -89,13 +89,13 @@ namespace RateLimiter.Tests
             Assert.IsTrue(validate2);
         }
 
-        [TestCase(Regions.US)]
-        [TestCase(Regions.Others)]
-        public void TestUSOtherRuleOutOfWindow_Successful(Regions region)
+        [TestCase(ClientRegions.US)]
+        [TestCase(ClientRegions.Others)]
+        public void TestUSOtherRuleOutOfWindow_Successful(ClientRegions region)
         {
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
-            var token = new Token(ip);
+            var token = new ClientToken(ip);
             var request1 = new ClientRequest(token, region, DateTime.UtcNow);
             var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
 
@@ -108,14 +108,14 @@ namespace RateLimiter.Tests
             Assert.IsTrue(validate2);
         }
 
-        [TestCase(Regions.US)]
-        [TestCase(Regions.Others)]
+        [TestCase(ClientRegions.US)]
+        [TestCase(ClientRegions.Others)]
 
-        public void TestUSMaxRequestInWindows_Successfully(Regions region)
+        public void TestUSMaxRequestInWindows_Successfully(ClientRegions region)
         {
             //Arrage
             var ip = IPAddress.Parse("127.0.0.1");
-            var token = new Token(ip);
+            var token = new ClientToken(ip);
             var request = new ClientRequest(token, region, DateTime.UtcNow);
             var results = new List<bool>();
 
@@ -130,12 +130,12 @@ namespace RateLimiter.Tests
             Assert.IsTrue(results.All(x => x));
         }
 
-        [TestCase(Regions.US)]
-        public void TestUSMaxRequestInWindows_ExceedingMax_Successfully(Regions region)
+        [TestCase(ClientRegions.US)]
+        public void TestUSMaxRequestInWindows_ExceedingMax_Successfully(ClientRegions region)
         {
             //Arrage
             var ip = IPAddress.Parse("127.0.0.1");
-            var token = new Token(ip);
+            var token = new ClientToken(ip);
             var request = new ClientRequest(token, region, DateTime.UtcNow);
 
             //Act
@@ -150,12 +150,12 @@ namespace RateLimiter.Tests
             Assert.IsFalse(result);
         }
 
-        [TestCase(Regions.Others)]
-        public void OtherRegionsPassAllRules_Successfully(Regions region)
+        [TestCase(ClientRegions.Others)]
+        public void OtherRegionsPassAllRules_Successfully(ClientRegions region)
         {
             //Arrange
             var ip = IPAddress.Parse("127.0.0.1");
-            var token = new Token(ip);
+            var token = new ClientToken(ip);
             var request = new ClientRequest(token, region, DateTime.UtcNow);
             bool result = true;
 

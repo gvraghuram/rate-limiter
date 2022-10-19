@@ -24,16 +24,16 @@ namespace RateLimiter.RulesEngine.Rules
 
         public bool IsEnabled(ClientRequest request)
         {
-            return Regions.EU.Equals(request.Region);
+            return ClientRegions.EU.Equals(request.Region);
         }
 
         public bool Validate(ClientRequest request)
         {
-            var lastRequest = storageService.GetToken(request.Token.Ip.ToString());
+            var lastRequest = storageService.GetToken(request.ClientToken.Ip.ToString());
 
             if (lastRequest == null)
             {
-                storageService.SetToken(request.Token.Ip.ToString(), new ClientRequestCache { LastRequest = request.RequestTime });
+                storageService.SetToken(request.ClientToken.Ip.ToString(), new ClientRequestCache { LastRequest = request.RequestTime });
                 return true;
             }
 
@@ -42,7 +42,7 @@ namespace RateLimiter.RulesEngine.Rules
             if (result)
             {
                 lastRequest.LastRequest = request.RequestTime;
-                storageService.SetToken(request.Token.Ip.ToString(), lastRequest);
+                storageService.SetToken(request.ClientToken.Ip.ToString(), lastRequest);
             }
 
             return result;

@@ -8,6 +8,6 @@ namespace RateLimiter.LocationService
 {
     public interface ILocationService
     {
-        Regions GetRegionFromIp(IPAddress iPAddress);
+        ClientRegions GetRegionFromIp(IPAddress iPAddress);
     }
 }

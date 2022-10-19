@@ -28,16 +28,16 @@ namespace RateLimiter.RulesEngine.Rules
 
         public bool IsEnabled(ClientRequest request)
         {
-            return Regions.US.Equals(request.Region);
+            return ClientRegions.US.Equals(request.Region);
         }
 
         public bool Validate(ClientRequest request)
         {
-            var lastRequest = storageService.GetToken(request.Token.Ip.ToString());
+            var lastRequest = storageService.GetToken(request.ClientToken.Ip.ToString());
 
             if (lastRequest == null)
             {
-                storageService.SetToken(request.Token.Ip.ToString(), new ClientRequestCache { LastRequest = request.RequestTime, RequestCount = 1 });
+                storageService.SetToken(request.ClientToken.Ip.ToString(), new ClientRequestCache { LastRequest = request.RequestTime, RequestCount = 1 });
                 return true;
             }
 
@@ -46,12 +46,12 @@ namespace RateLimiter.RulesEngine.Rules
             {
                 lastRequest.LastRequest = request.RequestTime;
                 lastRequest.RequestCount = 1;
-                storageService.SetToken(request.Token.Ip.ToString(), lastRequest);
+                storageService.SetToken(request.ClientToken.Ip.ToString(), lastRequest);
                 return true;
             }
             if (++lastRequest.RequestCount <= maxRequests)
             {
-                storageService.SetToken(request.Token.Ip.ToString(), lastRequest);
+                storageService.SetToken(request.ClientToken.Ip.ToString(), lastRequest);
                 return true;
             }
 

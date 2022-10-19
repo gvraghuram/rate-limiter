@@ -4,14 +4,14 @@ namespace RateLimiter.Model
 {
     public class ClientRequest
     {
-        public Token Token { get; }
-        public Regions Region { get; }
+        public ClientToken ClientToken { get; }
+        public ClientRegions Region { get; }
         public DateTime RequestTime { get; }
 
-        public ClientRequest(Token token, Regions region) : this(token, region, DateTime.UtcNow) { }
-        public ClientRequest(Token token, Regions region, DateTime requestTime)
+        public ClientRequest(ClientToken token, ClientRegions region) : this(token, region, DateTime.UtcNow) { }
+        public ClientRequest(ClientToken token, ClientRegions region, DateTime requestTime)
         {
-            Token = token;
+            ClientToken = token;
             Region = region;
             RequestTime = requestTime;
         }
