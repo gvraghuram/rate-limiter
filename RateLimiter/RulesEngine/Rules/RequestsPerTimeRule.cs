@@ -3,10 +3,14 @@ using RateLimiter.DataAccess;
 using RateLimiter.Model;
 using RateLimiter.RulesEngine.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace RateLimiter.RulesEngine
+namespace RateLimiter.RulesEngine.Rules
 {
-    internal class RequestsPerTimeRule : IRateLimiterRule
+    public class RequestsPerTimeRule : IRateLimiterRule
     {
         private readonly int maxRequests;
         private readonly int timeSpan;
@@ -22,18 +26,18 @@ namespace RateLimiter.RulesEngine
             timeSpan = int.Parse(configuration[TimeSpanRequest]);
         }
 
-        public bool IsEnabled(UserRequest request)
+        public bool IsEnabled(ClientRequest request)
         {
             return Regions.US.Equals(request.Region);
         }
 
-        public bool Validate(UserRequest request)
+        public bool Validate(ClientRequest request)
         {
             var lastRequest = storageService.GetToken(request.Token.Ip.ToString());
 
             if (lastRequest == null)
             {
-                storageService.SetToken(request.Token.Ip.ToString(), new UserRequestCache { LastRequest = request.RequestTime, RequestCount = 1 });
+                storageService.SetToken(request.Token.Ip.ToString(), new ClientRequestCache { LastRequest = request.RequestTime, RequestCount = 1 });
                 return true;
             }
 

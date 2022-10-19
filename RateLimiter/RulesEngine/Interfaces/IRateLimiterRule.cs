@@ -4,7 +4,7 @@ namespace RateLimiter.RulesEngine.Interfaces
 {
     public interface IRateLimiterRule
     {
-        bool IsEnabled(UserRequest request);
-        bool Validate(UserRequest request);
+        bool IsEnabled(ClientRequest request);
+        bool Validate(ClientRequest request);
     }
 }

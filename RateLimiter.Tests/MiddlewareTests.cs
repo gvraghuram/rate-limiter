@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using RateLimiter.Extensions;
 using RateLimiter.Middlewares;
 using RateLimiter.RulesEngine;
 using System;
@@ -29,7 +30,7 @@ namespace RateLimiter.Tests
                         .ConfigureServices(services =>
                         {
                             services.AddMyServices();
-                            services.UseRateLimiter();
+                            services.AddRateLimitServices();
                         })
                         .Configure(app =>
                         {

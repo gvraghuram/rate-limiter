@@ -7,7 +7,7 @@ namespace RateLimiter.DataAccess
 {
     public interface IStorageService
     {
-        UserRequestCache GetToken(string key);
-        void SetToken(string key, UserRequestCache token);
+        ClientRequestCache GetToken(string key);
+        void SetToken(string key, ClientRequestCache token);
     }
 }

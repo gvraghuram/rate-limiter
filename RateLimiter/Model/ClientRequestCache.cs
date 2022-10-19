@@ -2,7 +2,7 @@
 
 namespace RateLimiter.Model
 {
-    public class UserRequestCache
+    public class ClientRequestCache
     {
         public DateTime LastRequest { get; set; }
         public int RequestCount { get; set; }

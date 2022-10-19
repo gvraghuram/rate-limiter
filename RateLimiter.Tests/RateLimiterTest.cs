@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RateLimiter.RulesEngine;
+using RateLimiter.Extensions;
 
 namespace RateLimiter.Tests
 {
@@ -21,7 +22,7 @@ namespace RateLimiter.Tests
         public void Setup()
         {
             var services = new ServiceCollection();
-            services.UseRateLimiter();
+            services.AddRateLimitServices();
             services.AddSingleton<IStorageService, InMemoryService>();
             services.AddSingleton(typeof(IConfiguration), Configuration.GetConfiguration);
             var serviceProvider = services.BuildServiceProvider();
@@ -36,8 +37,8 @@ namespace RateLimiter.Tests
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
             var token = new Token(ip);
-            var request1 = new UserRequest(token, region, DateTime.UtcNow);
-            var request2 = new UserRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
+            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
+            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
 
             //Act
             var validate1 = engine.ProcessRules(request1);
@@ -55,8 +56,8 @@ namespace RateLimiter.Tests
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
             var token = new Token(ip);
-            var request1 = new UserRequest(token, region, DateTime.UtcNow);
-            var request2 = new UserRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
+            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
+            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
 
             //Act
             var validate1 = engine.ProcessRules(request1);
@@ -76,8 +77,8 @@ namespace RateLimiter.Tests
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
             var token = new Token(ip);
-            var request1 = new UserRequest(token, region, DateTime.UtcNow);
-            var request2 = new UserRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
+            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
+            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(100));
 
             //Act
             var validate1 = engine.ProcessRules(request1);
@@ -95,8 +96,8 @@ namespace RateLimiter.Tests
             //Arrange 
             var ip = IPAddress.Parse("127.0.0.1");
             var token = new Token(ip);
-            var request1 = new UserRequest(token, region, DateTime.UtcNow);
-            var request2 = new UserRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
+            var request1 = new ClientRequest(token, region, DateTime.UtcNow);
+            var request2 = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(5));
 
             //Act
             var validate1 = engine.ProcessRules(request1);
@@ -115,7 +116,7 @@ namespace RateLimiter.Tests
             //Arrage
             var ip = IPAddress.Parse("127.0.0.1");
             var token = new Token(ip);
-            var request = new UserRequest(token, region, DateTime.UtcNow);
+            var request = new ClientRequest(token, region, DateTime.UtcNow);
             var results = new List<bool>();
 
             //Act
@@ -135,7 +136,7 @@ namespace RateLimiter.Tests
             //Arrage
             var ip = IPAddress.Parse("127.0.0.1");
             var token = new Token(ip);
-            var request = new UserRequest(token, region, DateTime.UtcNow);
+            var request = new ClientRequest(token, region, DateTime.UtcNow);
 
             //Act
             for (int i = 0; i < 10; i++)
@@ -155,13 +156,13 @@ namespace RateLimiter.Tests
             //Arrange
             var ip = IPAddress.Parse("127.0.0.1");
             var token = new Token(ip);
-            var request = new UserRequest(token, region, DateTime.UtcNow);
+            var request = new ClientRequest(token, region, DateTime.UtcNow);
             bool result = true;
 
             //Act
             for (int i = 0; i < 100; i++)
             {
-                request = new UserRequest(token, region, DateTime.UtcNow.AddMilliseconds(i));
+                request = new ClientRequest(token, region, DateTime.UtcNow.AddMilliseconds(i));
                 result = result && engine.ProcessRules(request);
             }
 

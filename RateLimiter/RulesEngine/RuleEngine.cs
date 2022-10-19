@@ -13,11 +13,11 @@ namespace RateLimiter.RulesEngine
             this.rules = rules;
         }
 
-        public bool ProcessRules(UserRequest userRequest)
+        public bool ProcessRules(ClientRequest ClientRequest)
         {
             foreach (var rule in rules)
             {
-                if (rule.IsEnabled(userRequest) && !rule.Validate(userRequest))
+                if (rule.IsEnabled(ClientRequest) && !rule.Validate(ClientRequest))
                     return false;
             }
             return true;

@@ -26,8 +26,8 @@ namespace RateLimiter.Middlewares
             var region = locationService.GetRegionFromIp(ip);
             var claimsIdentity = context.User.Identity as ClaimsIdentity;
 
-            var userRequest = new UserRequest(new Token(ip), region);
-            if (engine.ProcessRules(userRequest))
+            var ClientRequest = new ClientRequest(new Token(ip), region);
+            if (engine.ProcessRules(ClientRequest))
             {
                 await next(context);
                 return;

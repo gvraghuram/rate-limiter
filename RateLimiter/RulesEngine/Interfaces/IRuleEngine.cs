@@ -4,6 +4,6 @@ namespace RateLimiter.RulesEngine.Interfaces
 {
     public interface IRuleEngine
     {
-        bool ProcessRules(UserRequest userRequest);
+        bool ProcessRules(ClientRequest ClientRequest);
     }
 }
